@@ -5,7 +5,20 @@ import { iconMap } from '../utils/iconMap';
 
 export function Home() {
   const { data, isButtonEnabled } = useAdmin();
-  const { onlineCount, maxSlots, features } = data;
+  const { onlineCount, maxSlots, features, launcherDownloadUrl, launcherVersion, launcherFileName, launcherSize } = data;
+
+  const handleDownload = () => {
+    if (!launcherDownloadUrl) {
+      alert('Ссылка на скачивание лаунчера пока не настроена. Пожалуйста, попробуйте позже или обратитесь в поддержку.');
+      return;
+    }
+    const link = document.createElement('a');
+    link.href = launcherDownloadUrl;
+    link.download = launcherFileName || 'TILE_RUSSIA_Launcher.exe';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div>
@@ -58,11 +71,14 @@ export function Home() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             {isButtonEnabled('start-playing') ? (
-              <a href="#" className="group flex items-center gap-2 px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all duration-300 shadow-lg shadow-red-900/40 hover:shadow-red-900/60 hover:-translate-y-0.5">
+              <button 
+                onClick={handleDownload}
+                className="group flex items-center gap-2 px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all duration-300 shadow-lg shadow-red-900/40 hover:shadow-red-900/60 hover:-translate-y-0.5"
+              >
                 <Download size={20} />
-                Начать играть
+                Начать играть {launcherVersion && <span className="text-xs opacity-80 font-normal">v{launcherVersion}</span>}
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-              </a>
+              </button>
             ) : (
               <div className="flex items-center gap-2 px-8 py-4 bg-zinc-800 text-gray-500 font-bold rounded-xl cursor-not-allowed">
                 <AlertTriangle size={18} />
@@ -142,10 +158,16 @@ export function Home() {
             <p className="text-gray-400 mb-8">
               Подключайся прямо сейчас и стань частью самого масштабного RolePlay проекта!
             </p>
-            <a href="#" className="inline-flex items-center gap-2 px-10 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all duration-300 shadow-lg shadow-red-900/50">
+            <button 
+              onClick={handleDownload}
+              className="inline-flex items-center gap-2 px-10 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all duration-300 shadow-lg shadow-red-900/50"
+            >
               <Download size={20} />
-              Скачать лаунчер
-            </a>
+              Скачать лаунчер {launcherVersion && `v${launcherVersion}`}
+            </button>
+            {launcherSize && (
+              <p className="mt-2 text-xs text-gray-500">Размер файла: {launcherSize}</p>
+            )}
           </div>
         </section>
       )}
