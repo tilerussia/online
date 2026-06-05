@@ -539,7 +539,7 @@ export function Admin() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className={labelClass}>Версия лаунчера</label>
-                  <input type="text" value={data.launcherVersion} className={inputClass} id="launcher-version" placeholder="2.4.1" />
+                  <input type="text" value={data.launcherVersion} className={inputClass} id="launcher-version" placeholder="0.1.0" />
                 </div>
                 <div>
                   <label className={labelClass}>Имя файла</label>
