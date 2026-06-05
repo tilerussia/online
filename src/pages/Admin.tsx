@@ -8,10 +8,10 @@ import {
 import {
   ArrowLeft, Save, Trash2, Plus, RefreshCw, Shield,
   Newspaper, HelpCircle, Layout, Settings, LogOut, BookOpen,
-  Send, ToggleLeft, ToggleRight, FileText
+  Send, ToggleLeft, ToggleRight, FileText, Users as UsersIcon, Download
 } from 'lucide-react';
 
-type Tab = 'general' | 'news' | 'faq' | 'features' | 'factions' | 'steps' | 'buttons' | 'telegram' | 'pages' | 'applications';
+type Tab = 'general' | 'news' | 'faq' | 'features' | 'factions' | 'steps' | 'buttons' | 'telegram' | 'pages' | 'applications' | 'launcher';
 
 export function Admin() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -33,6 +33,7 @@ export function Admin() {
     updateButtons,
     updatePages,
     updateTelegram,
+    updateLauncher,
     resetToDefaults,
   } = useAdmin();
 
@@ -48,8 +49,14 @@ export function Admin() {
   const [buttons, setButtons] = useState<ButtonVisibility[]>(JSON.parse(JSON.stringify(data.buttonVisibility)));
   const [pages, setPages] = useState<PageContent[]>(JSON.parse(JSON.stringify(data.pages)));
   const [botToken, setBotToken] = useState(data.telegramBotToken);
-  const [chatIds, setChatIds] = useState<string[]>(data.telegramChatIds || (data.telegramChatId ? [data.telegramChatId] : []));
+  const [chatId, setChatId] = useState(data.telegramChatId);
   const [savedMsg, setSavedMsg] = useState('');
+
+  // Telegram recipients
+  const [telegramRecipients, setTelegramRecipients] = useState<{ id: string; name: string; role: string }[]>(
+    JSON.parse(localStorage.getItem('tile-telegram-recipients') || '[]')
+  );
+  const [newRecipient, setNewRecipient] = useState({ id: '', name: '', role: 'Администратор' });
 
   // Applications
   const [applications] = useState<any[]>(
@@ -60,6 +67,10 @@ export function Admin() {
     const auth = localStorage.getItem('tile-admin-auth');
     if (auth === 'true') setAuthenticated(true);
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('tile-telegram-recipients', JSON.stringify(telegramRecipients));
+  }, [telegramRecipients]);
 
   const handleLogin = () => {
     if (password === 'tileadmin2025') {
@@ -95,7 +106,7 @@ export function Admin() {
   const saveFactions = () => { updateFactions(factions); showSaved(); };
   const saveSteps = () => { updateSteps(steps); showSaved(); };
   const saveButtons = () => { updateButtons(buttons); showSaved(); };
-  const saveTelegram = () => { updateTelegram(botToken, chatIds); showSaved(); };
+  const saveTelegram = () => { updateTelegram(botToken, chatId); showSaved(); };
   const savePages = () => { updatePages(pages); showSaved(); };
 
   const addNewsItem = () => {
@@ -107,6 +118,13 @@ export function Admin() {
   const addFeature = () => setFeatures([...features, { icon: 'Star', title: 'Новая особенность', desc: 'Описание...' }]);
   const addFaction = () => setFactions([...factions, { icon: 'Users', name: 'Новая фракция', desc: 'Описание...' }]);
   const addStep = () => setSteps([...steps, { icon: 'Play', title: 'Новый шаг', desc: 'Описание...', details: ['Деталь 1', 'Деталь 2'] }]);
+
+  const addRecipient = () => {
+    if (!newRecipient.id || !newRecipient.name) return;
+    setTelegramRecipients([...telegramRecipients, { ...newRecipient }]);
+    setNewRecipient({ id: '', name: '', role: 'Администратор' });
+    showSaved();
+  };
 
   if (!authenticated) {
     return (
@@ -138,7 +156,8 @@ export function Admin() {
     { key: 'buttons', label: 'Кнопки', icon: <ToggleLeft size={18} /> },
     { key: 'telegram', label: 'Telegram', icon: <Send size={18} /> },
     { key: 'pages', label: 'Страницы', icon: <FileText size={18} /> },
-    { key: 'applications', label: `Заявки (${applications.length})`, icon: <Shield size={18} /> },
+    { key: 'applications', label: `Заявки (${applications.length})`, icon: <UsersIcon size={18} /> },
+    { key: 'launcher', label: 'Лаунчер', icon: <Download size={18} /> },
   ];
 
   const inputClass = "w-full px-3 py-2 bg-black border border-zinc-700 rounded-lg text-white text-sm focus:outline-none focus:border-red-600/50 transition-colors";
@@ -349,69 +368,94 @@ export function Admin() {
           <div className="space-y-6">
             <h2 className="text-xl font-bold">📨 Настройки Telegram</h2>
             <p className="text-sm text-gray-500 bg-zinc-900 p-3 rounded-lg border border-zinc-800">
-              Укажите токен бота и ID чатов (пользователей или групп), куда будут приходить уведомления о новых заявках.
+              Укажите токен бота и ID чата для получения уведомлений о заявках. Пример: <code className="text-red-400">https://api.telegram.org/botТОКЕН/sendMessage?chat_id=ID&amp;text=Сообщение</code>
             </p>
-            <div>
-              <label className={labelClass}>Токен бота (Bot Token)</label>
-              <input type="text" value={botToken} onChange={(e) => setBotToken(e.target.value)} className={inputClass} placeholder="8367451122:AAFfiN-nr7KtLRCzY2CW1atjN9bJPq3KO0Y" />
-            </div>
             
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs font-medium text-gray-400">ID чатов / получателей (Chat IDs)</label>
-                <button onClick={() => setChatIds([...chatIds, ''])} className="text-xs text-red-500 hover:text-red-400 flex items-center gap-1">
-                  <Plus size={12} /> Добавить получателя
-                </button>
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-4">
+              <h3 className="font-semibold text-white">Основной получатель</h3>
+              <div>
+                <label className={labelClass}>Токен бота (Bot Token)</label>
+                <input type="text" value={botToken} onChange={(e) => setBotToken(e.target.value)} className={inputClass} placeholder="8367451122:AAFfiN-nr7KtLRCzY2CW1atjN9bJPq3KO0Y" />
               </div>
+              <div>
+                <label className={labelClass}>ID чата (Chat ID)</label>
+                <input type="text" value={chatId} onChange={(e) => setChatId(e.target.value)} className={inputClass} placeholder="8388066117" />
+              </div>
+            </div>
+
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-white">Дополнительные получатели ({telegramRecipients.length})</h3>
+              </div>
+              <p className="text-xs text-gray-500">Добавьте администраторов и модераторов, которые будут получать уведомления о заявках</p>
               
-              <div className="space-y-3">
-                {chatIds.map((id, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <input 
-                      type="text" 
-                      value={id} 
-                      onChange={(e) => {
-                        const newIds = [...chatIds];
-                        newIds[index] = e.target.value;
-                        setChatIds(newIds);
-                      }} 
-                      className={inputClass} 
-                      placeholder="8388066117" 
-                    />
-                    <button 
-                      onClick={() => setChatIds(chatIds.filter((_, i) => i !== index))}
-                      className="p-2 text-gray-500 hover:text-red-500 bg-zinc-900 border border-zinc-700 rounded-lg transition-colors"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                ))}
-                {chatIds.length === 0 && (
-                  <p className="text-sm text-gray-500 italic">Получатели не добавлены. Уведомления приходить не будут.</p>
-                )}
+              {telegramRecipients.length > 0 && (
+                <div className="space-y-2">
+                  {telegramRecipients.map((rec, i) => (
+                    <div key={i} className="flex items-center gap-2 p-3 bg-black/50 rounded-lg border border-zinc-800">
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-white">{rec.name}</div>
+                        <div className="text-xs text-gray-500">ID: {rec.id} • {rec.role}</div>
+                      </div>
+                      <button
+                        onClick={() => setTelegramRecipients(telegramRecipients.filter((_, j) => j !== i))}
+                        className="text-red-500 hover:text-red-400 p-1"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <input
+                  type="text"
+                  value={newRecipient.id}
+                  onChange={(e) => setNewRecipient({ ...newRecipient, id: e.target.value })}
+                  placeholder="Chat ID"
+                  className={inputClass}
+                />
+                <input
+                  type="text"
+                  value={newRecipient.name}
+                  onChange={(e) => setNewRecipient({ ...newRecipient, name: e.target.value })}
+                  placeholder="Имя"
+                  className={inputClass}
+                />
+                <select
+                  value={newRecipient.role}
+                  onChange={(e) => setNewRecipient({ ...newRecipient, role: e.target.value })}
+                  className={`${inputClass} cursor-pointer`}
+                >
+                  <option className="bg-zinc-900">Администратор</option>
+                  <option className="bg-zinc-900">Модератор</option>
+                  <option className="bg-zinc-900">Владелец</option>
+                  <option className="bg-zinc-900">Тех. поддержка</option>
+                </select>
               </div>
+              <button onClick={addRecipient} className={btnOutline}>
+                <Plus size={16} /> Добавить получателя
+              </button>
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
               <h3 className="font-medium text-white mb-2">Тестовая отправка</h3>
-              <p className="text-xs text-gray-500 mb-4">Сообщение будет отправлено всем указанным получателям выше.</p>
               <button
                 onClick={async () => {
-                  try {
-                    await Promise.all(
-                      chatIds.map(id => 
-                        fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${id}&text=${encodeURIComponent('✅ Тестовое сообщение от TILE RUSSIA! Бот настроен корректно.')}`, { mode: 'no-cors' })
-                      )
-                    );
-                    alert('Сообщения отправлены! Проверьте Telegram.');
-                  } catch {
-                    alert('Ошибка отправки. Проверьте токен и ID.');
+                  const recipients = [{ id: chatId, name: 'Основной' }, ...telegramRecipients];
+                  let sent = 0;
+                  for (const rec of recipients) {
+                    try {
+                      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${rec.id}&text=${encodeURIComponent('✅ Тестовое сообщение от TILE RUSSIA! Бот настроен корректно.')}`, { mode: 'no-cors' });
+                      sent++;
+                    } catch {}
                   }
+                  alert(`Сообщение отправлено ${sent} получателям! Проверьте Telegram.`);
                 }}
-                disabled={chatIds.length === 0}
-                className={btnOutline + (chatIds.length === 0 ? ' opacity-50 cursor-not-allowed' : '')}
+                className={btnOutline}
               >
-                <Send size={16} /> Отправить тестовое сообщение
+                <Send size={16} /> Отправить всем ({1 + telegramRecipients.length})
               </button>
             </div>
             <button onClick={saveTelegram} className={btnPrimary}><Save size={16} /> Сохранить настройки</button>
@@ -469,6 +513,70 @@ export function Admin() {
                 ))}
               </div>
             )}
+           </div>
+         )}
+
+        {/* ---- LAUNCHER ---- */}
+        {activeTab === 'launcher' && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-bold">💾 Настройки лаунчера</h2>
+            <p className="text-sm text-gray-500 bg-zinc-900 p-3 rounded-lg border border-zinc-800">
+              Здесь вы можете обновить ссылку на скачивание лаунчера. Загрузите новый .exe файл на любой файловый хостинг (Google Drive, Dropbox, ваш сервер, GitHub Releases и т.д.) и вставьте прямую ссылку на скачивание ниже.
+            </p>
+
+            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
+              <div>
+                <label className={labelClass}>Прямая ссылка на скачивание лаунчера</label>
+                <input 
+                  type="text" 
+                  defaultValue={data.launcherDownloadUrl} 
+                  className={inputClass} 
+                  placeholder="https://example.com/TILE_RUSSIA_Launcher.exe" 
+                  id="launcher-url"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className={labelClass}>Версия лаунчера</label>
+                  <input type="text" value={data.launcherVersion} className={inputClass} id="launcher-version" placeholder="2.4.1" />
+                </div>
+                <div>
+                  <label className={labelClass}>Имя файла</label>
+                  <input type="text" value={data.launcherFileName} className={inputClass} id="launcher-filename" placeholder="TILE_RUSSIA_Launcher.exe" />
+                </div>
+                <div>
+                  <label className={labelClass}>Размер файла</label>
+                  <input type="text" value={data.launcherSize} className={inputClass} id="launcher-size" placeholder="48 MB" />
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button 
+                  onClick={() => {
+                    const url = (document.getElementById('launcher-url') as HTMLInputElement)?.value || data.launcherDownloadUrl;
+                    const version = (document.getElementById('launcher-version') as HTMLInputElement)?.value || data.launcherVersion;
+                    const fileName = (document.getElementById('launcher-filename') as HTMLInputElement)?.value || data.launcherFileName;
+                    const size = (document.getElementById('launcher-size') as HTMLInputElement)?.value || data.launcherSize;
+                    updateLauncher(url, version, fileName, size);
+                    showSaved();
+                  }} 
+                  className={btnPrimary}
+                >
+                  <Save size={16} /> Сохранить настройки лаунчера
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-zinc-900 border border-green-900/30 rounded-xl p-4 text-sm">
+              <strong className="text-green-400">Текущая ссылка:</strong>
+              <div className="mt-1 break-all text-gray-300 font-mono text-xs bg-black p-2 rounded">
+                {data.launcherDownloadUrl}
+              </div>
+              <div className="mt-2 text-gray-400">
+                Версия: <span className="text-white">{data.launcherVersion}</span> • Размер: <span className="text-white">{data.launcherSize}</span>
+              </div>
+            </div>
           </div>
         )}
 
