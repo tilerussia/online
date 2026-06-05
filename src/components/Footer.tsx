@@ -42,7 +42,6 @@ export function Footer() {
       <footer className="bg-zinc-950 border-t border-zinc-800 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {/* Brand */}
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <img
@@ -58,7 +57,6 @@ export function Footer() {
               <p className="text-sm text-gray-500 leading-relaxed mb-4">
                 TILE Russia — мобильный RP проект. Все права на игровые материалы принадлежат Tile Russia Games Studio. Проект создан исключительно в развлекательных целях.
               </p>
-              {/* Socials */}
               <div className="flex items-center gap-3">
                 <a href="https://t.me" target="_blank" rel="noopener noreferrer"
                    className="p-2 bg-zinc-900 hover:bg-red-600/20 hover:text-red-500 text-gray-500 rounded-lg transition-all">
@@ -71,16 +69,12 @@ export function Footer() {
               </div>
             </div>
 
-            {/* Navigation */}
             <div>
               <h3 className="font-semibold text-white mb-4 text-sm uppercase tracking-wider">Навигация</h3>
               <ul className="space-y-2">
                 {footerLinks.map((link) => (
                   <li key={link.to + link.label}>
-                    <Link
-                      to={link.to}
-                      className="text-sm text-gray-500 hover:text-red-400 transition-colors"
-                    >
+                    <Link to={link.to} className="text-sm text-gray-500 hover:text-red-400 transition-colors">
                       {link.label}
                     </Link>
                   </li>
@@ -88,7 +82,6 @@ export function Footer() {
               </ul>
             </div>
 
-            {/* Legal */}
             <div>
               <h3 className="font-semibold text-white mb-4 text-sm uppercase tracking-wider">Документы</h3>
               <ul className="space-y-2 mb-6">
@@ -98,17 +91,13 @@ export function Footer() {
                 <li><Link to="/page/eula" className="text-sm text-gray-500 hover:text-red-400 transition-colors">EULA</Link></li>
               </ul>
               <h3 className="font-semibold text-white mb-4 text-sm uppercase tracking-wider">FAQ</h3>
-              <Link
-                to="/faq"
-                className="inline-flex items-center gap-1.5 text-sm text-red-500 hover:text-red-400 transition-colors"
-              >
+              <Link to="/faq" className="inline-flex items-center gap-1.5 text-sm text-red-500 hover:text-red-400 transition-colors">
                 <HelpCircle size={14} />
                 Часто задаваемые вопросы
               </Link>
             </div>
           </div>
 
-          {/* Bottom bar */}
           <div className="border-t border-zinc-800 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-600">© 2026-2027 Tile Russia Games Studio. Все права защищены.</span>
@@ -117,7 +106,6 @@ export function Footer() {
               <Link to="/page/eula" className="text-xs text-gray-600 hover:text-red-400 transition-colors">EULA</Link>
               <Link to="/page/privacy" className="text-xs text-gray-600 hover:text-red-400 transition-colors">Конфиденциальность</Link>
               <Link to="/page/rules" className="text-xs text-gray-600 hover:text-red-400 transition-colors">Правила</Link>
-              {/* Hidden admin dot */}
               <span
                 onClick={() => setShowAdminPrompt(true)}
                 className="w-1.5 h-1.5 rounded-full bg-zinc-800 hover:bg-red-600 cursor-pointer transition-colors ml-2"
@@ -127,7 +115,6 @@ export function Footer() {
         </div>
       </footer>
 
-      {/* Admin Password Modal */}
       {showAdminPrompt && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="bg-zinc-900 border border-red-900/50 rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">

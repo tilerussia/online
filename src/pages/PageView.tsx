@@ -33,49 +33,15 @@ export function PageView() {
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-white">{page.title}</h1>
           </div>
-          <div className="max-w-none">
-            {page.content.split('\n').map((rawLine, i) => {
-              const line = rawLine.trim();
-
-              // Пустая строка — отступ
-              if (line === '') return <div key={i} className="h-3" />;
-
-              // Заголовок раздела (#)
-              if (line.startsWith('#')) {
-                return (
-                  <h2 key={i} className="text-lg sm:text-xl font-bold text-white mt-8 mb-3 pb-2 border-b border-zinc-800 flex items-center gap-2">
-                    <span className="w-1 h-5 bg-red-600 rounded-full" />
-                    {line.replace(/^#\s*/, '')}
-                  </h2>
-                );
-              }
-
-              // Маркированный пункт (•)
-              if (line.startsWith('•')) {
-                return (
-                  <p key={i} className="text-gray-400 leading-relaxed mb-2 pl-5 relative">
-                    <span className="absolute left-0 text-red-500">•</span>
-                    {line.replace(/^•\s*/, '')}
-                  </p>
-                );
-              }
-
-              // Нумерованный пункт (1.1. ...)
-              if (/^\d+(\.\d+)*\.?\s/.test(line)) {
-                return (
-                  <p key={i} className="text-gray-400 leading-relaxed mb-2 pl-1">
-                    {line}
-                  </p>
-                );
-              }
-
-              // Обычный абзац
-              return (
-                <p key={i} className="text-gray-400 leading-relaxed mb-3">
-                  {line}
-                </p>
-              );
-            })}
+          <div className="prose prose-invert max-w-none">
+            {page.content.split('\n').map((line, i) => (
+              <p key={i} className={`text-gray-400 leading-relaxed mb-3 ${line.startsWith('#') ? 'text-xl font-bold text-white' : ''}`}>
+                {line.startsWith('•') ? (
+                  <span className="text-red-500 mr-2">•</span>
+                ) : null}
+                {line.replace(/^#\s*/, '').replace(/^•\s*/, '')}
+              </p>
+            ))}
           </div>
         </div>
       </div>

@@ -31,7 +31,7 @@ export function Applications() {
     if (!form.nickname.trim()) e.nickname = 'Введите никнейм';
     if (!form.name.trim()) e.name = 'Введите имя';
     if (!form.age.trim()) e.age = 'Введите возраст';
-    else if (isNaN(Number(form.age)) || Number(form.age) < 12 || Number(form.age) > 99) e.age = 'Возраст должен быть от 12 до 99';
+    else if (isNaN(Number(form.age)) || Number(form.age) < 14 || Number(form.age) > 99) e.age = 'Возраст должен быть от 14 до 99';
     if (!form.role) e.role = 'Выберите роль';
     if (!form.time) e.time = 'Укажите время';
     if (!form.contact.trim()) e.contact = 'Укажите контакт для связи';
@@ -55,19 +55,16 @@ export function Applications() {
       `🔗 <b>Контакт:</b> ${form.contact}\n` +
       `💬 <b>Опыт:</b> ${form.experience || 'Не указан'}`;
 
-    try {
-      const chatIds = data.telegramChatIds && data.telegramChatIds.length > 0 
-        ? data.telegramChatIds 
-        : (data.telegramChatId ? [data.telegramChatId] : []);
-        
-      await Promise.all(
-        chatIds.map(id => 
-          fetch(`https://api.telegram.org/bot${data.telegramBotToken}/sendMessage?chat_id=${id}&text=${encodeURIComponent(message)}&parse_mode=HTML`, { mode: 'no-cors' }).catch(() => {})
-        )
-      );
-    } catch {}
+    // Send to all recipients
+    const recipients = JSON.parse(localStorage.getItem('tile-telegram-recipients') || '[]');
+    const allRecipients = [{ id: data.telegramChatId }, ...recipients];
+    
+    for (const rec of allRecipients) {
+      try {
+        await fetch(`https://api.telegram.org/bot${data.telegramBotToken}/sendMessage?chat_id=${rec.id}&text=${encodeURIComponent(message)}&parse_mode=HTML`, { mode: 'no-cors' });
+      } catch {}
+    }
 
-    // Store locally too
     const applications = JSON.parse(localStorage.getItem('tile-applications') || '[]');
     applications.unshift({ ...form, id: Date.now(), date: new Date().toLocaleString('ru-RU') });
     localStorage.setItem('tile-applications', JSON.stringify(applications.slice(0, 100)));
@@ -116,7 +113,6 @@ export function Applications() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Basic Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
@@ -155,14 +151,13 @@ export function Applications() {
               value={form.age}
               onChange={(e) => { setForm({ ...form, age: e.target.value }); setErrors({ ...errors, age: '' }); }}
               placeholder="Ваш возраст"
-              min="12"
+              min="14"
               max="99"
               className={inputClass('age')}
             />
             {errors.age && <p className="text-red-500 text-xs mt-1">{errors.age}</p>}
           </div>
 
-          {/* Role Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-3">На какую роль претендуете?</label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -197,7 +192,6 @@ export function Applications() {
             {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role}</p>}
           </div>
 
-          {/* Time */}
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
               <Clock size={14} /> Сколько времени готовы уделять?
@@ -215,7 +209,6 @@ export function Applications() {
             {errors.time && <p className="text-red-500 text-xs mt-1">{errors.time}</p>}
           </div>
 
-          {/* Contact */}
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
               <Link2 size={14} /> Ссылки для связи
@@ -230,7 +223,6 @@ export function Applications() {
             {errors.contact && <p className="text-red-500 text-xs mt-1">{errors.contact}</p>}
           </div>
 
-          {/* Experience */}
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-2">
               Почему именно вы? (опционально)

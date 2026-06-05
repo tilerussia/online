@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AdminProvider } from './context/AdminContext';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
@@ -13,7 +13,7 @@ import { Admin } from './pages/Admin';
 export default function App() {
   return (
     <AdminProvider>
-      <HashRouter>
+      <BrowserRouter>
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
@@ -26,7 +26,7 @@ export default function App() {
           </Route>
           <Route path="/admin" element={<Admin />} />
         </Routes>
-      </HashRouter>
+      </BrowserRouter>
     </AdminProvider>
   );
 }

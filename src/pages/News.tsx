@@ -1,14 +1,5 @@
-import { Calendar, ArrowRight, Sparkles, Tag } from 'lucide-react';
+import { Calendar, ArrowRight, Tag } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
-
-const newsColors = [
-  'from-red-600 to-red-900',
-  'from-red-700 to-rose-900',
-  'from-zinc-600 to-zinc-900',
-  'from-red-600 to-red-900',
-  'from-zinc-600 to-zinc-900',
-  'from-red-700 to-rose-900',
-];
 
 export function News() {
   const { data } = useAdmin();
@@ -30,53 +21,48 @@ export function News() {
           <div className="text-center text-gray-500 py-12">Новостей пока нет.</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {news.map((item, i) => (
+            {news.map((item) => (
               <article
                 key={item.id}
                 className="group bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden hover:border-red-900/30 transition-all duration-300 hover:-translate-y-1"
               >
-                <div className={`relative h-44 overflow-hidden bg-gradient-to-br ${newsColors[i % newsColors.length]} flex items-center justify-center`}>
+                {/* Image or gradient */}
+                <div className="h-48 relative overflow-hidden bg-zinc-950">
                   {item.image ? (
                     <>
                       <img
                         src={item.image}
                         alt={item.title}
-                        loading="lazy"
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
-                          const el = e.currentTarget;
-                          el.style.display = 'none';
-                          const fallback = el.nextElementSibling as HTMLElement | null;
-                          if (fallback) fallback.style.display = 'flex';
+                          (e.target as HTMLImageElement).style.display = 'none';
                         }}
                       />
-                      <div className="absolute inset-0 hidden items-center justify-center">
-                        <Sparkles size={48} className="text-white/30" />
-                      </div>
-                      {/* Gradient overlay for readability */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     </>
                   ) : (
-                    <Sparkles size={48} className="text-white/30" />
+                    <div className="h-full bg-gradient-to-br from-red-600/20 to-red-900/20 flex items-center justify-center">
+                      <div className="text-red-500/30 text-6xl font-black">NEWS</div>
+                    </div>
                   )}
-                </div>
-
-                <div className="p-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-red-400 bg-red-600/10 px-2 py-1 rounded-full">
+                  <div className="absolute top-3 left-3">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-white bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/10">
                       <Tag size={12} />
                       {item.category}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-xs text-gray-500">
-                      <Calendar size={12} />
-                      {item.date}
-                    </span>
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  <div className="flex items-center gap-2 mb-3 text-xs text-gray-500">
+                    <Calendar size={12} />
+                    {item.date}
                   </div>
 
-                  <h3 className="text-lg font-semibold text-white mb-3 group-hover:text-red-400 transition-colors">
+                  <h3 className="text-lg font-semibold text-white mb-3 group-hover:text-red-400 transition-colors line-clamp-2">
                     {item.title}
                   </h3>
-                  <p className="text-gray-500 text-sm leading-relaxed mb-4">
+                  <p className="text-gray-500 text-sm leading-relaxed mb-4 line-clamp-3">
                     {item.excerpt}
                   </p>
 
