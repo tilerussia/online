@@ -31,7 +31,7 @@ export function Applications() {
     if (!form.nickname.trim()) e.nickname = 'Введите никнейм';
     if (!form.name.trim()) e.name = 'Введите имя';
     if (!form.age.trim()) e.age = 'Введите возраст';
-    else if (isNaN(Number(form.age)) || Number(form.age) < 14 || Number(form.age) > 99) e.age = 'Возраст должен быть от 14 до 99';
+    else if (isNaN(Number(form.age)) || Number(form.age) < 12 || Number(form.age) > 99) e.age = 'Возраст должен быть от 12 до 99';
     if (!form.role) e.role = 'Выберите роль';
     if (!form.time) e.time = 'Укажите время';
     if (!form.contact.trim()) e.contact = 'Укажите контакт для связи';
@@ -155,7 +155,7 @@ export function Applications() {
               value={form.age}
               onChange={(e) => { setForm({ ...form, age: e.target.value }); setErrors({ ...errors, age: '' }); }}
               placeholder="Ваш возраст"
-              min="14"
+              min="12"
               max="99"
               className={inputClass('age')}
             />
